@@ -1,25 +1,26 @@
-import { carValidationSchema } from './car.validation';
+import QueryBuilder from '../../builder/QueryBuilder';
+
 import { ICar } from './car.interface';
 import { CarModel } from './car.model';
+import { searchableFields } from './car.constants';
 
 const createCarIntoDB = async (car: ICar) => {
   const result = await CarModel.create(car);
   return result;
 };
 
-const getAllCarsFromDB = async (searchTerm: string) => {
-  const query = searchTerm
-    ? {
-        $or: [
-          { brand: { $regex: searchTerm, $options: 'i' } },
-          { model: { $regex: searchTerm, $options: 'i' } },
-          { category: { $regex: searchTerm, $options: 'i' } },
-        ],
-      }
-    : {};
+const getAllCarsFromDB = async (query: Record<string, unknown>) => {
+  const carQuery = new QueryBuilder(CarModel.find({}), query)
+    .filter()
+    .sort()
+    .paginate()
+    .fields()
+    .search(searchableFields);
 
-  const result = await CarModel.find(query);
-  return result;
+  const result = await carQuery.modelQuery;
+  const paginationMetaData = await carQuery.countTotal();
+
+  return { result, paginationMetaData };
 };
 
 const getSingleCarFromDB = async (id: string) => {
@@ -32,11 +33,13 @@ const updateACarIntoDB = async (
   carId: string,
   updateCarData: Partial<ICar>,
 ) => {
-  const parsedCarData = carValidationSchema.partial().parse(updateCarData);
+  // const parsedCarData = CarValidationSchema.createCarValidationSchema
+  //   .partial()
+  //   .parse(updateCarData);
 
   const result = await CarModel.findByIdAndUpdate(
     { _id: carId },
-    parsedCarData,
+    updateCarData,
     { new: true, runValidators: true },
   );
   return result;
