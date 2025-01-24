@@ -15,6 +15,7 @@ router.post(
   validateRequest(CarValidationSchema.createCarValidationSchema),
   CarController.createACar,
 );
+router.get('/featured', CarController.getFeaturedCars);
 router.get('/', CarController.getAllCars);
 router.get('/:carId', CarController.getSingleCar);
 router.put(

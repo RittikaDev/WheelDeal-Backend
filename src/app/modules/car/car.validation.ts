@@ -2,63 +2,95 @@ import { z } from 'zod';
 
 const createCarValidationSchema = z.object({
   body: z.object({
-    brand: z.string().min(1, { message: 'Car Brand is required.' }),
-    model: z.string().min(1, { message: 'Car Model is required.' }),
+    name: z.string().min(1, 'Car name is required'),
+    description: z.string().min(1, 'Description is required'),
+    image: z.string().url('Invalid image URL').min(1, 'Image URL is required'),
+    brand: z.string().min(1, 'Brand is required'),
+    model: z.string().min(1, 'Model is required'),
+    type: z.string().min(1, 'Type is required'),
+    category: z.string().min(1, 'Category is required'),
     year: z
       .number()
       .int()
-      .gte(1886, { message: 'Year must be 1886 or later.' }) // SINCE CARS WERE INVEMTED IN 1886, CHECK LINK => https://www.thoughtco.com/who-invented-the-car-4059932#:~:text=On%20January%2029%2C%201886%2C%20Benz,manufacturer%20of%20automobiles%20by%201900.
-      .lte(new Date().getFullYear(), {
-        message: 'Year cannot be in the future.',
-      }),
-    price: z
+      .min(1900, 'Year must be a valid year')
+      .max(new Date().getFullYear(), 'Year cannot be in the future'),
+    color: z.string().min(1, 'Color is required'),
+    seatCapacity: z.number().int().min(1, 'Seat capacity is required'),
+    mileage: z.number().int().min(0, 'Mileage is required'),
+    mileageUnit: z.enum(['kilometers', 'miles']),
+    isElectric: z.boolean().default(false),
+    moreImages: z
+      .array(
+        z.object({
+          url: z
+            .string()
+            .url('Invalid gallery image URL')
+            .min(1, 'Gallery image URL is required'),
+        }),
+      )
+      .default([]),
+    features: z.array(z.string()).default([]),
+    pricePerHour: z
       .number()
-      .positive({ message: 'Car Price must be a positive number.' }),
-    category: z.enum(['Sedan', 'SUV', 'Truck', 'Coupe', 'Convertible'], {
-      required_error: 'Car Category is required.',
-    }),
-    description: z.string().min(1, { message: 'Car Description is required.' }),
-    quantity: z
-      .number()
-      .int()
-      .nonnegative({ message: 'Car Quantity cannot be negative.' }),
-    inStock: z.boolean({ required_error: 'InStock field is required.' }),
+      .positive('Price per hour must be a positive number')
+      .min(1, 'Price per hour is required'),
+    transmission: z.enum(['automatic', 'manual']),
+    status: z.enum(['available', 'unavailable']).default('available'),
+    isDeleted: z.boolean().default(false),
   }),
 });
 
 const updateCarValidationSchema = z.object({
   body: z.object({
-    brand: z.string().min(1, { message: 'Car Brand is required.' }).optional(),
-    model: z.string().min(1, { message: 'Car Model is required.' }).optional(),
+    name: z.string().min(1, 'Car name is required').optional(),
+    description: z.string().min(1, 'Description is required').optional(),
+    image: z
+      .string()
+      .url('Invalid image URL')
+      .min(1, 'Image URL is required')
+      .optional(),
+    brand: z.string().min(1, 'Brand is required').optional(),
+    model: z.string().min(1, 'Model is required').optional(),
+    type: z.string().min(1, 'Type is required').optional(),
+    category: z.string().min(1, 'Category is required').optional(),
     year: z
       .number()
       .int()
-      .gte(1886, { message: 'Year must be 1886 or later.' })
-      .lte(new Date().getFullYear(), {
-        message: 'Year cannot be in the future.',
-      })
+      .min(1900, 'Year must be a valid year')
+      .max(new Date().getFullYear(), 'Year cannot be in the future')
       .optional(),
-    price: z
-      .number()
-      .positive({ message: 'Car Price must be a positive number.' })
-      .optional(),
-    category: z
-      .enum(['Sedan', 'SUV', 'Truck', 'Coupe', 'Convertible'], {
-        required_error: 'Car Category is required.',
-      })
-      .optional(),
-    description: z
-      .string()
-      .min(1, { message: 'Car Description is required.' })
-      .optional(),
-    quantity: z
+    color: z.string().min(1, 'Color is required').optional(),
+    seatCapacity: z
       .number()
       .int()
-      .nonnegative({ message: 'Car Quantity cannot be negative.' })
+      .min(1, 'Seat capacity is required')
       .optional(),
-    inStock: z
-      .boolean({ required_error: 'InStock field is required.' })
+    mileage: z.number().int().min(0, 'Mileage is required').optional(),
+    mileageUnit: z.enum(['kilometers', 'miles']).optional(),
+    isElectric: z.boolean().default(false).optional(),
+    moreImages: z
+      .array(
+        z.object({
+          url: z
+            .string()
+            .url('Invalid gallery image URL')
+            .min(1, 'Gallery image URL is required'),
+        }),
+      )
+      .default([])
       .optional(),
+    features: z.array(z.string()).default([]).optional(),
+    pricePerHour: z
+      .number()
+      .positive('Price per hour must be a positive number')
+      .min(1, 'Price per hour is required')
+      .optional(),
+    transmission: z.enum(['automatic', 'manual']).optional(),
+    status: z
+      .enum(['available', 'unavailable'])
+      .default('available')
+      .optional(),
+    isDeleted: z.boolean().default(false).optional(),
   }),
 });
 
