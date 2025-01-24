@@ -16,8 +16,6 @@ const createCarValidationSchema = z.object({
       .max(new Date().getFullYear(), 'Year cannot be in the future'),
     color: z.string().min(1, 'Color is required'),
     seatCapacity: z.number().int().min(1, 'Seat capacity is required'),
-    mileage: z.number().int().min(0, 'Mileage is required'),
-    mileageUnit: z.enum(['kilometers', 'miles']),
     isElectric: z.boolean().default(false),
     moreImages: z
       .array(
@@ -30,12 +28,9 @@ const createCarValidationSchema = z.object({
       )
       .default([]),
     features: z.array(z.string()).default([]),
-    pricePerHour: z
-      .number()
-      .positive('Price per hour must be a positive number')
-      .min(1, 'Price per hour is required'),
     transmission: z.enum(['automatic', 'manual']),
     status: z.enum(['available', 'unavailable']).default('available'),
+    stock: z.number().int().min(0, 'Stock is required'),
     isDeleted: z.boolean().default(false),
   }),
 });
@@ -65,8 +60,6 @@ const updateCarValidationSchema = z.object({
       .int()
       .min(1, 'Seat capacity is required')
       .optional(),
-    mileage: z.number().int().min(0, 'Mileage is required').optional(),
-    mileageUnit: z.enum(['kilometers', 'miles']).optional(),
     isElectric: z.boolean().default(false).optional(),
     moreImages: z
       .array(
@@ -80,16 +73,11 @@ const updateCarValidationSchema = z.object({
       .default([])
       .optional(),
     features: z.array(z.string()).default([]).optional(),
-    pricePerHour: z
-      .number()
-      .positive('Price per hour must be a positive number')
-      .min(1, 'Price per hour is required')
-      .optional(),
-    transmission: z.enum(['automatic', 'manual']).optional(),
     status: z
       .enum(['available', 'unavailable'])
       .default('available')
       .optional(),
+    stock: z.number().int().min(0, 'Stock is required').optional(),
     isDeleted: z.boolean().default(false).optional(),
   }),
 });

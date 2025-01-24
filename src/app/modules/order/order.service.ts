@@ -12,15 +12,15 @@ const createOrder = async (orderData: {
 
   if (!car) throw new Error('Car not found');
 
-  if (car.quantity < orderData.quantity) {
+  if (car.stock < orderData.quantity) {
     throw new Error('Insufficient stock available');
   }
 
   // REDUCING THE CAR QUANTITY EACH TIME AN ORDER IS PLACED
-  car.quantity -= orderData.quantity;
+  car.stock -= orderData.quantity;
 
   // IF quantity = 0 THEN, inStock WILL BE false
-  if (car.quantity === 0) car.inStock = false;
+  if (car.stock === 0) car.status = 'unavailable';
 
   await car.save(); // SAVE CAR
 

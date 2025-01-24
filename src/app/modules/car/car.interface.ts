@@ -13,14 +13,12 @@ export interface ICar {
   year: number;
   color: string;
   seatCapacity: number;
-  mileage: number;
-  mileageUnit: 'kilometers' | 'miles';
   isElectric: boolean;
   moreImages: ICarGalleryImage[];
   features: string[];
-  pricePerHour: number;
   transmission: 'automatic' | 'manual';
   status: 'available' | 'unavailable';
+  stock: number;
   isDeleted: boolean;
   createdAt?: Date;
   updatedAt?: Date;

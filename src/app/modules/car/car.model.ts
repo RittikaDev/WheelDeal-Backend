@@ -16,12 +16,6 @@ const carSchema = new Schema<ICar>(
       type: Number,
       required: [true, 'Seat capacity is required'],
     },
-    mileage: { type: Number, required: [true, 'Mileage is required'] },
-    mileageUnit: {
-      type: String,
-      enum: ['kilometers', 'miles'],
-      required: [true, 'Mileage unit is required'],
-    },
     isElectric: { type: Boolean, default: false },
     moreImages: [
       {
@@ -32,10 +26,6 @@ const carSchema = new Schema<ICar>(
       },
     ],
     features: { type: [String], default: [] },
-    pricePerHour: {
-      type: Number,
-      required: [true, 'Price per hour is required'],
-    },
     transmission: {
       type: String,
       enum: ['automatic', 'manual'],
@@ -45,6 +35,10 @@ const carSchema = new Schema<ICar>(
       type: String,
       enum: ['available', 'unavailable'],
       default: 'available',
+    },
+    stock: {
+      type: Number,
+      required: true,
     },
     isDeleted: { type: Boolean, default: false },
   },

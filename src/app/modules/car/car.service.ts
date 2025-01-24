@@ -49,7 +49,7 @@ const updateACarIntoDB = async (
   if (!existingCar) throw new AppError(httpStatus.NOT_FOUND, 'Car not found!');
 
   // CHECK IF THE CAR'S STATUS IS "AVAILABLE"
-  if (existingCar.status !== 'available')
+  if (existingCar.status !== 'available' && existingCar.stock <= 0)
     throw new AppError(
       httpStatus.BAD_REQUEST,
       'Cannot update car. No longer available',
@@ -65,8 +65,21 @@ const updateACarIntoDB = async (
 };
 
 const deleteACarFromDB = async (id: string) => {
-  const result = await CarModel.deleteOne({ _id: id });
-  return result;
+  const isProductExists = await CarModel.findById(id);
+
+  if (!isProductExists)
+    throw new AppError(httpStatus.BAD_REQUEST, 'Car does not exist');
+
+  const deletedCar = await CarModel.findByIdAndUpdate(
+    id,
+    { isDeleted: true, status: 'unavailable', stock: 0 },
+    {
+      new: true,
+      runValidators: true,
+    },
+  );
+
+  return deletedCar;
 };
 
 export const CarService = {
