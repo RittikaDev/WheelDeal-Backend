@@ -23,6 +23,9 @@ const UserSchema = new Schema<TUser>(
       require: [true, 'password must be required'],
       select: 0,
     },
+    phone: { type: String, default: 'N/A' },
+    address: { type: String, default: 'N/A' },
+    city: { type: String, default: 'N/A' },
     role: {
       type: String,
       enum: ['admin', 'user'],

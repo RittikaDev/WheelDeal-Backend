@@ -1,39 +1,72 @@
 import { CarModel } from '../car/car.model';
-import { OrderModel } from './order.model';
 
-const createOrder = async (orderData: {
-  email: string;
-  car: string;
-  quantity: number;
-  totalPrice: number;
-}) => {
-  // CHECKING IF CAR EXISTS
-  const car = await CarModel.findById(orderData.car);
+import OrderModel from './order.model';
+import { orderUtils } from './order.utils';
 
-  if (!car) throw new Error('Car not found');
+import AppError from '../../errors/AppError';
 
-  if (car.stock < orderData.quantity) {
-    throw new Error('Insufficient stock available');
-  }
+import httpStatus from 'http-status-codes';
+import { User } from '../user/user.model';
+import { JwtPayload } from 'jsonwebtoken';
 
-  // REDUCING THE CAR QUANTITY EACH TIME AN ORDER IS PLACED
-  car.stock -= orderData.quantity;
+const createOrder = async (
+  user: JwtPayload,
+  payload: { products: { product: string; quantity: number }[] },
+  client_ip: string,
+) => {
+  if (!payload?.products?.length)
+    throw new AppError(httpStatus.NOT_ACCEPTABLE, 'Order is not specified');
 
-  // IF quantity = 0 THEN, inStock WILL BE false
-  if (car.stock === 0) car.status = 'unavailable';
+  const products = payload.products;
 
-  await car.save(); // SAVE CAR
+  let totalPrice = 0;
+  const productDetails = await Promise.all(
+    products.map(async (item) => {
+      const product = await CarModel.findById(item.product);
+      if (product) {
+        const subtotal = product ? (product.price || 0) * item.quantity : 0;
+        totalPrice += subtotal;
+        return item;
+      }
+    }),
+  );
 
-  const newOrder = new OrderModel({
-    email: orderData.email,
-    car: orderData.car,
-    quantity: orderData.quantity,
-    totalPrice: orderData.totalPrice,
+  const userDetails = await User.findOne({ email: user.userEmail });
+
+  let order = await OrderModel.create({
+    user: userDetails?._id,
+    products: productDetails,
+    totalPrice,
   });
 
-  await newOrder.save(); // SAVE ORDER
+  // payment integration
+  const shurjopayPayload = {
+    amount: totalPrice,
+    order_id: order._id,
+    currency: 'BDT',
+    customer_name: userDetails?.name,
+    customer_address: userDetails?.address,
+    customer_email: userDetails?.email,
+    customer_phone: userDetails?.phone,
+    customer_city: userDetails?.city,
+    client_ip,
+  };
+  // console.log('inside order service', shurjopayPayload);
 
-  return newOrder;
+  const payment = await orderUtils.makePaymentAsync(shurjopayPayload);
+
+  // console.log(payment);
+
+  if (payment?.transactionStatus) {
+    order = await order.updateOne({
+      transaction: {
+        id: payment.sp_order_id,
+        transactionStatus: payment.transactionStatus,
+      },
+    });
+  }
+
+  return payment.checkout_url;
 };
 
 export const calculateTotalRevenue = async () => {

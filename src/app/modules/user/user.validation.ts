@@ -12,6 +12,9 @@ const CreateUserValidationSchema = z.object({
       .string()
       .min(6, { message: 'Password must be at least 6 characters long' })
       .nonempty({ message: 'Password is required' }),
+    phone: z.string().optional(),
+    address: z.string().optional(),
+    city: z.string().optional(),
     role: z.enum(['admin', 'user']).optional().default('user'),
     isBlocked: z.boolean().optional().default(false),
   }),

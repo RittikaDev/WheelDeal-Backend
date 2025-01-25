@@ -31,7 +31,7 @@ const auth = (...requiredRoles: TRole[]) => {
       token as string,
       config.jwt_access_secret as string,
     ) as JwtPayload;
-    console.log('Token Expiry:', new Date(Number(decoded?.exp) * 1000));
+    // console.log('Token Expiry:', new Date(Number(decoded?.exp) * 1000));
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
     const { role, userEmail, iat } = decoded;
