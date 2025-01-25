@@ -39,19 +39,15 @@ const createUserIntoDB = async (payload: TUser) => {
 const userSignIntoDB = async (payload: TUserAuth) => {
   const user = await User.isUserExistByEmail(payload.email);
 
-  if (!user) {
-    throw new AppError(httpStatus.NOT_FOUND, 'User not found');
-  }
+  if (!user) throw new AppError(httpStatus.NOT_FOUND, 'User not found');
 
-  if (typeof payload.password !== 'string') {
+  if (typeof payload.password !== 'string')
     throw new AppError(httpStatus.BAD_REQUEST, 'Please provide a password');
-  }
 
   if (
     !(await User.isPasswordMatched(payload.password, user?.password as string))
-  ) {
+  )
     throw new AppError(httpStatus.UNAUTHORIZED, 'Invalid credentials');
-  }
 
   const jwtPayload = {
     userEmail: user.email,
@@ -92,8 +88,13 @@ const refreshToken = async (token: string) => {
   const { userEmail, iat } = decoded;
 
   const user = await User.isUserExistByEmail(userEmail);
-  if (!user) {
-    throw new AppError(httpStatus.NOT_FOUND, 'user is not register');
+  if (!user) throw new AppError(httpStatus.NOT_FOUND, 'user is not register');
+
+  if (
+    user.passwordChangedAt &&
+    User.isJWTIssuedBeforePasswordChanged(user.passwordChangedAt, iat as number)
+  ) {
+    throw new AppError(httpStatus.UNAUTHORIZED, 'You are not authorized !');
   }
 
   const jwtPayload = {

@@ -154,41 +154,53 @@ const getUserOrders = async (
   return { result, paginationMetaData };
 };
 
-export const calculateTotalRevenue = async () => {
-  // MongoDB AGGREGATION PIPELINE
-  const revenueData = await OrderModel.aggregate([
-    {
-      $lookup: {
-        from: 'cars', // REFERENCE TO 'CARS' COLLECTION
-        localField: 'car', // FIELD OF THE ORDER COLLECTION THAT IS REFERENCING THE CAR COLLECTION
-        foreignField: '_id',
-        as: 'carDetails',
-      },
-    },
-    {
-      $unwind: '$carDetails', // EXPECTING ONLY ONE MATCH, THAT'S WHY $unwind
-    },
-    {
-      $match: {
-        'carDetails.quantity': { $gt: 0 }, // CAR QUANTITY HAS TO BE MORE THAT 0
-      },
-    },
-    {
-      $project: {
-        totalRevenue: {
-          $multiply: ['$quantity', '$carDetails.price'],
-        },
-      },
-    },
-    {
-      $group: {
-        _id: null,
-        totalRevenue: { $sum: '$totalRevenue' },
-      },
-    },
-  ]);
+const cancelOrder = async (orderId: string) => {
+  const order = await OrderModel.findById(orderId);
 
-  return revenueData[0] ? revenueData[0].totalRevenue : 0;
+  if (!order) throw new AppError(httpStatus.NOT_FOUND, 'Order not found');
+
+  if (order.status === 'Shipped' || order.status === 'Delivered') {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Cannot cancel an order that is already shipped or delivered',
+    );
+  }
+
+  // Update the status to 'Cancelled'
+  order.status = 'Cancelled';
+  await order.save();
+
+  return order;
+};
+
+type OrderStatus =
+  | 'Pending'
+  | 'Processing'
+  | 'Shipped'
+  | 'Delivered'
+  | 'Cancelled';
+
+const updateOrderStatus = async (
+  orderId: string,
+  status: OrderStatus,
+  deliveryDate: string,
+) => {
+  const validStatuses = ['Pending', 'Processing', 'Shipped', 'Delivered'];
+
+  if (!validStatuses.includes(status))
+    throw new AppError(httpStatus.BAD_REQUEST, 'Invalid status');
+
+  const order = await OrderModel.findById(orderId);
+
+  if (!order) throw new AppError(httpStatus.NOT_FOUND, 'Order not found');
+
+  // Update the status and delivery date
+  order.status = status;
+  if (deliveryDate) order.deliveryDate = deliveryDate;
+
+  await order.save();
+
+  return order;
 };
 
 export const OrderService = {
@@ -196,5 +208,6 @@ export const OrderService = {
   verifyPayment,
   getAllOrders,
   getUserOrders,
-  calculateTotalRevenue,
+  cancelOrder,
+  updateOrderStatus,
 };

@@ -14,6 +14,7 @@ router
 router.get('/verify', auth(USER_ROLE.user), OrderController.verifyPayment);
 router.get('/my-bookings', auth(USER_ROLE.user), OrderController.getUserOrders);
 
-router.get('/revenue', OrderController.getRevenue);
+router.get('/cancel-order', auth(USER_ROLE.user), OrderController.cancelOrder);
+router.patch('/orders/:orderId/status', OrderController.updateOrderStatus);
 
 export const OrderRoute = router;

@@ -3,21 +3,43 @@ import sendResponse from '../../utils/sendResponse';
 import { UserService } from './user.services';
 import httpStatus from 'http-status-codes';
 
-const updatePassword = catchAsync(async (req, res) => {
-  console.log(req.body);
-  const { password, newPassword } = req.body;
-  console.log(password);
+const changePassword = catchAsync(async (req, res) => {
+  const { ...passwordData } = req.body;
 
-  // Call the service to update the password
-  await UserService.updatePassword(req.user!, password, newPassword);
-
-  // Send a success response
+  const result = await UserService.changePassword(req.user!, passwordData);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'Password updated successfully',
-    data: null, // No additional data is returned in this case
+    message: 'Password is updated succesfully!',
+    data: result,
   });
 });
 
-export const UserController = { updatePassword };
+// USER: UPDATE PROFILE
+const updateProfile = catchAsync(async (req, res) => {
+  const updatedUser = await UserService.updateProfile(req.user!, req.body);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'User profile updated successfully',
+    data: updatedUser,
+  });
+});
+
+// MANAGING USERS
+const manageUserStatus = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const updatedUser = await UserService.manageUserStatus(id, req.body);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'User status updated successfully',
+    data: updatedUser,
+  });
+});
+
+export const UserController = {
+  updateProfile,
+  changePassword,
+  manageUserStatus,
+};

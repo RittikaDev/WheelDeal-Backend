@@ -20,6 +20,35 @@ const CreateUserValidationSchema = z.object({
   }),
 });
 
+const UpdateUserValidationSchema = z.object({
+  body: z.object({
+    name: z.string().min(1, { message: 'Name is required' }).optional(),
+    email: z
+      .string()
+      .email({ message: 'Invalid email address' })
+      .nonempty({ message: 'Email is required' })
+      .optional(),
+    password: z
+      .string()
+      .min(6, { message: 'Password must be at least 6 characters long' })
+      .nonempty({ message: 'Password is required' })
+      .optional(),
+    phone: z.string().optional().optional(),
+    address: z.string().optional().optional(),
+    city: z.string().optional().optional(),
+    role: z.enum(['admin', 'user']).optional().default('user'),
+    isBlocked: z.boolean().optional().default(false).optional(),
+  }),
+});
+
+const ManageStatusValidationSchema = z.object({
+  body: z
+    .object({
+      isBlocked: z.boolean(),
+    })
+    .strict(),
+});
+
 const loginValidationSchema = z.object({
   body: z.object({
     email: z.string({ required_error: 'Email is required' }),
@@ -33,6 +62,15 @@ const updatePassValidationSchema = z.object({
   }),
 });
 
+const changePasswordValidationSchema = z.object({
+  body: z.object({
+    oldPassword: z.string({
+      required_error: 'Old password is required',
+    }),
+    newPassword: z.string({ required_error: 'Password is required' }),
+  }),
+});
+
 const refreshTokenValidationSchema = z.object({
   cookies: z.object({
     refreshToken: z.string({
@@ -43,7 +81,10 @@ const refreshTokenValidationSchema = z.object({
 
 export const UserValidations = {
   CreateUserValidationSchema,
+  UpdateUserValidationSchema,
+  ManageStatusValidationSchema,
   loginValidationSchema,
   updatePassValidationSchema,
+  changePasswordValidationSchema,
   refreshTokenValidationSchema,
 };

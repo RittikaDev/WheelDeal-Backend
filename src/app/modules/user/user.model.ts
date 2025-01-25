@@ -23,6 +23,9 @@ const UserSchema = new Schema<TUser>(
       require: [true, 'password must be required'],
       select: false,
     },
+    passwordChangedAt: {
+      type: Date,
+    },
     phone: { type: String, default: 'N/A' },
     address: { type: String, default: 'N/A' },
     city: { type: String, default: 'N/A' },
@@ -43,20 +46,13 @@ const UserSchema = new Schema<TUser>(
 );
 
 UserSchema.pre('save', async function (next) {
-  const user = this as TUser;
-
-  if (user?.password && typeof user.password === 'string') {
-    try {
-      const hashedPassword = await bcrypt.hash(
-        user.password,
-        Number(config.bcrypt_salt_round),
-      );
-      user.password = hashedPassword;
-    } catch (err) {
-      return next(err as CallbackError);
-    }
-  }
-
+  // eslint-disable-next-line @typescript-eslint/no-this-alias
+  const user = this; // doc
+  // hashing password and save into DB
+  user.password = await bcrypt.hash(
+    user?.password as string,
+    Number(config.bcrypt_salt_round),
+  );
   next();
 });
 
@@ -74,6 +70,15 @@ UserSchema.statics.isPasswordMatched = async function (
   hashedPassword,
 ) {
   return await bcrypt.compare(plainTextPassword, hashedPassword);
+};
+
+UserSchema.statics.isJWTIssuedBeforePasswordChanged = function (
+  passwordChangedTimestamp: Date,
+  jwtIssuedTimestamp: number,
+) {
+  const passwordChangedTime =
+    new Date(passwordChangedTimestamp).getTime() / 1000;
+  return passwordChangedTime > jwtIssuedTimestamp;
 };
 
 export const User = model<TUser, UserModel>('User', UserSchema);

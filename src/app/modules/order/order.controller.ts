@@ -91,25 +91,35 @@ const getUserOrders = catchAsync(async (req, res) => {
     });
 });
 
-const getRevenue = catchAsync(async (req: Request, res: Response) => {
-  const totalRevenue = await OrderService.calculateTotalRevenue();
+const cancelOrder = catchAsync(async (req, res) => {
+  const { orderId } = req.params;
 
-  if (totalRevenue === 0) {
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: false,
-      message: 'Revenue is 0, no sales recorded.',
-      data: [],
-    });
-  } else
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: false,
-      message: 'Revenue calculated successfully',
-      data: {
-        totalRevenue: totalRevenue,
-      },
-    });
+  const updatedOrder = await OrderService.cancelOrder(orderId);
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: 'Order placed successfully',
+    data: updatedOrder,
+  });
+});
+const updateOrderStatus = catchAsync(async (req, res) => {
+  const { orderId } = req.params;
+  const { status, deliveryDate } = req.body;
+
+  const parsedDeliveryDate = deliveryDate ? new Date(deliveryDate) : null;
+
+  const updatedOrder = await OrderService.updateOrderStatus(
+    orderId,
+    status,
+    parsedDeliveryDate?.toString()!,
+  );
+
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: 'Order placed successfully',
+    data: updatedOrder,
+  });
 });
 
 export const OrderController = {
@@ -117,5 +127,6 @@ export const OrderController = {
   verifyPayment,
   getAllOrders,
   getUserOrders,
-  getRevenue,
+  cancelOrder,
+  updateOrderStatus,
 };

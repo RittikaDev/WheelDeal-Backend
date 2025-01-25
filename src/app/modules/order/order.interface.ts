@@ -7,7 +7,7 @@ export interface IOrder extends Document {
     quantity: number;
   }[];
   totalPrice: number;
-  status: 'Pending' | 'Processing' | 'Shipped' | 'Delivered';
+  status: 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
   transaction: {
     id: string;
     transactionStatus: string;
@@ -17,6 +17,9 @@ export interface IOrder extends Document {
     method: string;
     date_time: string;
   };
+  isPaid: boolean;
+  cancelledAt: Date;
+  updatedStatus: string; // For tracking status changes
   deliveryDate: string;
   createdAt?: Date;
   updatedAt?: Date;

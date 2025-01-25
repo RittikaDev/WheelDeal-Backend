@@ -26,7 +26,7 @@ const OrderSchema = new Schema<IOrder>(
     },
     status: {
       type: String,
-      enum: ['Pending', 'Processing', 'Shipped', 'Delivered'],
+      enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
       default: 'Pending',
     },
     transaction: {
@@ -38,6 +38,9 @@ const OrderSchema = new Schema<IOrder>(
       method: { type: String }, // E.g., 'SurjoPay', 'Credit Card', etc.
       date_time: { type: Date }, // Store this as a proper Date
     },
+    isPaid: { type: Boolean, default: false },
+    cancelledAt: { type: Date },
+    updatedStatus: { type: String }, // For tracking status changes
     deliveryDate: { type: String },
   },
   {
