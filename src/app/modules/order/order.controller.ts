@@ -39,6 +39,58 @@ const verifyPayment = catchAsync(async (req, res) => {
   });
 });
 
+const getAllOrders = catchAsync(async (req, res) => {
+  const newQuery = { ...req.query };
+
+  // modify the endTime field to filter the non returned bookings
+  if (req.query.endTime) {
+    delete newQuery.endTime;
+    newQuery.endTime = null as unknown as string;
+  }
+
+  const { paginationMetaData, result } =
+    await OrderService.getAllOrders(newQuery);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Bookings retrieved successfully',
+    paginationMetaData,
+    data: result,
+  });
+});
+
+const getUserOrders = catchAsync(async (req, res) => {
+  const newQuery = { ...req.query };
+
+  // modify the endTime field to filter the non returned bookings
+  if (req.query.endTime) {
+    delete newQuery.endTime;
+    newQuery.endTime = null as unknown as string;
+  }
+
+  const { paginationMetaData, result } = await OrderService.getUserOrders(
+    req.user!,
+    newQuery,
+  );
+  if (result.length === 0)
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.NOT_FOUND,
+      message: 'No bookings found under this user',
+      paginationMetaData,
+      data: result,
+    });
+  else
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: 'Bookings retrieved successfully',
+      paginationMetaData,
+      data: result,
+    });
+});
+
 const getRevenue = catchAsync(async (req: Request, res: Response) => {
   const totalRevenue = await OrderService.calculateTotalRevenue();
 
@@ -63,5 +115,7 @@ const getRevenue = catchAsync(async (req: Request, res: Response) => {
 export const OrderController = {
   createOrder,
   verifyPayment,
+  getAllOrders,
+  getUserOrders,
   getRevenue,
 };

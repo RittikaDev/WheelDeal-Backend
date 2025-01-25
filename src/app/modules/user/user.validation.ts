@@ -27,6 +27,12 @@ const loginValidationSchema = z.object({
   }),
 });
 
+const updatePassValidationSchema = z.object({
+  body: z.object({
+    password: z.string({ required_error: ' Password is required' }),
+  }),
+});
+
 const refreshTokenValidationSchema = z.object({
   cookies: z.object({
     refreshToken: z.string({
@@ -38,5 +44,6 @@ const refreshTokenValidationSchema = z.object({
 export const UserValidations = {
   CreateUserValidationSchema,
   loginValidationSchema,
+  updatePassValidationSchema,
   refreshTokenValidationSchema,
 };

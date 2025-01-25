@@ -126,7 +126,7 @@ const blockUserFromDB = async (id: string) => {
   return deletedStudent;
 };
 
-export const userServices = {
+export const AuthService = {
   createUserIntoDB,
   userSignIntoDB,
 

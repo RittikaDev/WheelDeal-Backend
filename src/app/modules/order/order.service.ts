@@ -3,10 +3,12 @@ import { CarModel } from '../car/car.model';
 import OrderModel from './order.model';
 import { orderUtils } from './order.utils';
 
+import { User } from '../user/user.model';
+
 import AppError from '../../errors/AppError';
+import QueryBuilder from '../../builder/QueryBuilder';
 
 import httpStatus from 'http-status-codes';
-import { User } from '../user/user.model';
 import { JwtPayload } from 'jsonwebtoken';
 
 const createOrder = async (
@@ -24,8 +26,19 @@ const createOrder = async (
     products.map(async (item) => {
       const product = await CarModel.findById(item.product);
       if (product) {
+        if (product.stock < item.quantity) {
+          throw new AppError(
+            httpStatus.BAD_REQUEST,
+            'Product is stock out, can not place an order',
+          );
+        }
         const subtotal = product ? (product.price || 0) * item.quantity : 0;
         totalPrice += subtotal;
+
+        product.stock -= item.quantity;
+        product.status = 'unavailable';
+        await product.save();
+
         return item;
       }
     }),
@@ -99,6 +112,48 @@ const verifyPayment = async (order_id: string) => {
   return verifiedPayment;
 };
 
+// GET ALL ORDERS : ADMIN
+const getAllOrders = async (query: Record<string, unknown>) => {
+  const orderQuery = new QueryBuilder(
+    OrderModel.find({}).populate('user').populate('products.product'),
+    query,
+  )
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const result = await orderQuery.modelQuery;
+  const paginationMetaData = await orderQuery.countTotal();
+
+  return { result, paginationMetaData };
+};
+
+// USER SPECIFIC ORDERS
+const getUserOrders = async (
+  userData: JwtPayload,
+  query: Record<string, unknown>,
+) => {
+  const user = await User.findOne({ email: userData.userEmail });
+  if (!user) throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+
+  const userBookingQuery = new QueryBuilder(
+    OrderModel.find({ user: user._id })
+      .populate('user')
+      .populate('products.product'),
+    query,
+  )
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const result = await userBookingQuery.modelQuery;
+  const paginationMetaData = await userBookingQuery.countTotal();
+
+  return { result, paginationMetaData };
+};
+
 export const calculateTotalRevenue = async () => {
   // MongoDB AGGREGATION PIPELINE
   const revenueData = await OrderModel.aggregate([
@@ -139,5 +194,7 @@ export const calculateTotalRevenue = async () => {
 export const OrderService = {
   createOrder,
   verifyPayment,
+  getAllOrders,
+  getUserOrders,
   calculateTotalRevenue,
 };

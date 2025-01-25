@@ -1,13 +1,13 @@
 import httpStatus from 'http-status-codes';
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
-import { userServices } from './auth.services';
+import { AuthService } from './auth.services';
 import config from '../../config';
 
 const createUser = catchAsync(async (req, res) => {
   const userData = req.body;
 
-  const user = await userServices.createUserIntoDB(userData);
+  const user = await AuthService.createUserIntoDB(userData);
 
   const responseData = {
     _id: user._id,
@@ -26,7 +26,7 @@ const createUser = catchAsync(async (req, res) => {
 // login user
 const signInUser = catchAsync(async (req, res) => {
   console.log(req.body);
-  const result = await userServices.userSignIntoDB(req.body);
+  const result = await AuthService.userSignIntoDB(req.body);
   const { refreshToken, accessToken } = result;
 
   res.cookie('refreshToken', refreshToken, {
@@ -48,7 +48,7 @@ const signInUser = catchAsync(async (req, res) => {
 
 const getCurrentUser = catchAsync(async (req, res) => {
   console.log(req.body);
-  const user = await userServices.getCurrentUser(req.body);
+  const user = await AuthService.getCurrentUser(req.body);
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
@@ -60,7 +60,7 @@ const getCurrentUser = catchAsync(async (req, res) => {
 // refresh Token
 const refreshToken = catchAsync(async (req, res) => {
   const { refreshToken } = req.cookies;
-  const result = await userServices.refreshToken(refreshToken);
+  const result = await AuthService.refreshToken(refreshToken);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -73,7 +73,7 @@ const refreshToken = catchAsync(async (req, res) => {
 const blockAUser = catchAsync(async (req, res) => {
   // console.log(req);
   const { id } = req.params;
-  await userServices.blockUserFromDB(id);
+  await AuthService.blockUserFromDB(id);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -82,7 +82,7 @@ const blockAUser = catchAsync(async (req, res) => {
   });
 });
 
-export const UserControllers = {
+export const AuthControllers = {
   createUser,
   signInUser,
 

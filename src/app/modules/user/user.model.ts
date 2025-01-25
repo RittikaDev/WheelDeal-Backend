@@ -21,7 +21,7 @@ const UserSchema = new Schema<TUser>(
     password: {
       type: String,
       require: [true, 'password must be required'],
-      select: 0,
+      select: false,
     },
     phone: { type: String, default: 'N/A' },
     address: { type: String, default: 'N/A' },
