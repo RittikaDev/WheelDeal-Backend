@@ -20,11 +20,23 @@ const createOrder = catchAsync(async (req, res) => {
 
     sendResponse(res, {
       statusCode: httpStatus.CREATED,
-      success: false,
+      success: true,
       message: 'Order placed successfully',
       data: order,
     });
   }
+});
+
+const verifyPayment = catchAsync(async (req, res) => {
+  console.log(req);
+  const order = await OrderService.verifyPayment(req.query.order_id as string);
+
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: 'Order verified successfully',
+    data: order,
+  });
 });
 
 const getRevenue = catchAsync(async (req: Request, res: Response) => {
@@ -50,5 +62,6 @@ const getRevenue = catchAsync(async (req: Request, res: Response) => {
 
 export const OrderController = {
   createOrder,
+  verifyPayment,
   getRevenue,
 };
