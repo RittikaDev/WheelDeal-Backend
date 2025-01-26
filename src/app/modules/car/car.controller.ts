@@ -28,8 +28,8 @@ const getFeaturedCars = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
-const getCarBrandNames = catchAsync(async (req: Request, res: Response) => {
-  const result = await CarService.getCarBrandNames();
+const getCarBrandCatModel = catchAsync(async (req: Request, res: Response) => {
+  const result = await CarService.getCarBrandCatModel();
 
   sendResponse(res, {
     success: true,
@@ -112,7 +112,7 @@ const deleteACar = catchAsync(async (req: Request, res: Response) => {
 export const CarController = {
   createACar,
   getFeaturedCars,
-  getCarBrandNames,
+  getCarBrandCatModel,
   getAllCars,
   getSingleCar,
   updateACar,

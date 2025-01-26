@@ -16,7 +16,7 @@ router.post(
   CarController.createACar,
 );
 router.get('/featured', CarController.getFeaturedCars);
-router.get('/brands', CarController.getCarBrandNames);
+router.get('/brands', CarController.getCarBrandCatModel);
 router.get('/', CarController.getAllCars);
 router.get('/:carId', CarController.getSingleCar);
 router.put(

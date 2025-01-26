@@ -33,14 +33,18 @@ const getAllCarsFromDB = async (query: Record<string, unknown>) => {
   return { result, paginationMetaData };
 };
 
-const getCarBrandNames = async () => {
-  const result = await CarModel.find()
-    .sort({ createdAt: -1 })
-    .limit(6)
-    .select('brand') // Only select the 'brand' field
-    .exec();
+const getCarBrandCatModel = async () => {
+  const result = await CarModel.aggregate([
+    { $project: { brand: 1, category: 1, model: 1 } }, // Include the fields for projection
+    {
+      $group: {
+        _id: { brand: '$brand', category: '$category', model: '$model' },
+      },
+    }, // Group by the distinct combination of brand, category, and model
+    { $limit: 6 }, // Limit the results to 6 distinct combinations
+  ]);
 
-  return result;
+  return result.map((item) => item._id);
 };
 
 const getSingleCarFromDB = async (id: string) => {
@@ -95,7 +99,7 @@ const deleteACarFromDB = async (id: string) => {
 export const CarService = {
   createCarIntoDB,
   getFeaturedCarsFromDB,
-  getCarBrandNames,
+  getCarBrandCatModel,
   getAllCarsFromDB,
   getSingleCarFromDB,
   updateACarIntoDB,

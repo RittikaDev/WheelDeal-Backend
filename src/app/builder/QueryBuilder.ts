@@ -35,7 +35,7 @@ class QueryBuilder<T> {
     }
     const excludeFields = [
       'search',
-      'sortBy',
+      'sort',
       'sortOrder',
       'limit',
       'page',
