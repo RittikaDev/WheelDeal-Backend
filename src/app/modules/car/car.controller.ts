@@ -28,6 +28,16 @@ const getFeaturedCars = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const getCarBrandNames = catchAsync(async (req: Request, res: Response) => {
+  const result = await CarService.getCarBrandNames();
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Brand names retrieved successfully',
+    data: result,
+  });
+});
 
 const getAllCars = catchAsync(async (req: Request, res: Response) => {
   const { paginationMetaData, result } = await CarService.getAllCarsFromDB(
@@ -102,6 +112,7 @@ const deleteACar = catchAsync(async (req: Request, res: Response) => {
 export const CarController = {
   createACar,
   getFeaturedCars,
+  getCarBrandNames,
   getAllCars,
   getSingleCar,
   updateACar,

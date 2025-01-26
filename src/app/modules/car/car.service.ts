@@ -33,6 +33,16 @@ const getAllCarsFromDB = async (query: Record<string, unknown>) => {
   return { result, paginationMetaData };
 };
 
+const getCarBrandNames = async () => {
+  const result = await CarModel.find()
+    .sort({ createdAt: -1 })
+    .limit(6)
+    .select('brand') // Only select the 'brand' field
+    .exec();
+
+  return result;
+};
+
 const getSingleCarFromDB = async (id: string) => {
   const result = await CarModel.findOne({ _id: id }); // SEARCHING BY THE MONGODB _ID
   // console.log(result);
@@ -85,6 +95,7 @@ const deleteACarFromDB = async (id: string) => {
 export const CarService = {
   createCarIntoDB,
   getFeaturedCarsFromDB,
+  getCarBrandNames,
   getAllCarsFromDB,
   getSingleCarFromDB,
   updateACarIntoDB,
