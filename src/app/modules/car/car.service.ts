@@ -14,7 +14,7 @@ const createCarIntoDB = async (car: ICar) => {
 
 // MINIMIZING THE DATA TRANSFERRED FROM THE SERVER AND REDUCES LATENCY BY ONLY FETCHING FIRST 8 FOR HOME PAGE TO HAVE QUICK LOAD TIME
 const getFeaturedCarsFromDB = async () => {
-  const result = await CarModel.find().sort({ createdAt: -1 }).limit(8).exec();
+  const result = await CarModel.find().sort({ createdAt: -1 }).limit(6).exec();
 
   return result;
 };
