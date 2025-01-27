@@ -69,6 +69,7 @@ UserSchema.statics.isPasswordMatched = async function (
   plainTextPassword,
   hashedPassword,
 ) {
+  // console.log('Inside password match', hashedPassword);
   return await bcrypt.compare(plainTextPassword, hashedPassword);
 };
 

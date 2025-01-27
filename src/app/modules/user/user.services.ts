@@ -41,9 +41,12 @@ const changePassword = async (
     Number(config.bcrypt_salt_round),
   );
 
+  // console.log('change pass service', newHashedPassword);
+  // console.log(userData);
+
   await User.findOneAndUpdate(
     {
-      id: userData.userId,
+      email: userData.userEmail,
       role: userData.role,
     },
     {
