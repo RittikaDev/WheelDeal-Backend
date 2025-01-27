@@ -19,11 +19,7 @@ router.post(
   AuthControllers.signInUser,
 );
 
-router.post(
-  '/current-user',
-  validateRequest(UserValidations.loginValidationSchema),
-  AuthControllers.getCurrentUser,
-);
+router.post('/current-user', AuthControllers.getCurrentUser);
 
 router.post(
   '/refresh-token',

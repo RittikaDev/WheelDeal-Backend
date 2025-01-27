@@ -75,7 +75,7 @@ const userSignIntoDB = async (payload: TUserAuth) => {
   };
 };
 
-const getCurrentUser = async (payload: TUserAuth) => {
+const getCurrentUser = async (payload: { email: string }) => {
   const user = await User.findOne({ email: payload.email });
   if (!user) throw new AppError(httpStatus.NOT_FOUND, 'User not found');
 

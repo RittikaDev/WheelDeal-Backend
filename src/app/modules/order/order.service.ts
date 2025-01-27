@@ -13,7 +13,15 @@ import { JwtPayload } from 'jsonwebtoken';
 
 const createOrder = async (
   user: JwtPayload,
-  payload: { products: { product: string; quantity: number }[] },
+  // payload: { products: { product: string; quantity: number }[] },
+  payload: {
+    products: { product: string; quantity: number }[];
+    address?: {
+      address: string;
+      city: string;
+      phone: string;
+    };
+  },
   client_ip: string,
 ) => {
   if (!payload?.products?.length)
@@ -36,7 +44,7 @@ const createOrder = async (
         totalPrice += subtotal;
 
         product.stock -= item.quantity;
-        product.status = 'unavailable';
+        if (product.stock <= 0) product.status = 'unavailable';
         await product.save();
 
         return item;
@@ -45,6 +53,12 @@ const createOrder = async (
   );
 
   const userDetails = await User.findOne({ email: user.userEmail });
+
+  const address = {
+    address: userDetails?.address || payload?.address?.address || '',
+    city: userDetails?.city || payload?.address?.city || '',
+    phone: userDetails?.phone || payload?.address?.phone || '',
+  };
 
   let order = await OrderModel.create({
     user: userDetails?._id,
@@ -58,10 +72,10 @@ const createOrder = async (
     order_id: order._id,
     currency: 'BDT',
     customer_name: userDetails?.name,
-    customer_address: userDetails?.address,
+    customer_address: address?.address,
     customer_email: userDetails?.email,
-    customer_phone: userDetails?.phone,
-    customer_city: userDetails?.city,
+    customer_phone: address?.phone,
+    customer_city: address?.city,
     client_ip,
   };
   // console.log('inside order service', shurjopayPayload);
@@ -84,6 +98,8 @@ const createOrder = async (
 
 const verifyPayment = async (order_id: string) => {
   const verifiedPayment = await orderUtils.verifyPaymentAsync(order_id);
+
+  // console.log(verifiedPayment);
 
   if (verifiedPayment.length) {
     await OrderModel.findOneAndUpdate(
