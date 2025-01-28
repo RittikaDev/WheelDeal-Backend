@@ -14,7 +14,11 @@ router
 router.get('/verify', auth(USER_ROLE.user), OrderController.verifyPayment);
 router.get('/my-bookings', auth(USER_ROLE.user), OrderController.getUserOrders);
 
-router.get('/cancel-order', auth(USER_ROLE.user), OrderController.cancelOrder);
+router.patch(
+  '/cancel-order/:orderId',
+  auth(USER_ROLE.user),
+  OrderController.cancelOrder,
+);
 
 router.delete(
   '/:orderId/delete-order',
