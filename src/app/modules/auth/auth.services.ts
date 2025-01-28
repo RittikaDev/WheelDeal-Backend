@@ -49,6 +49,12 @@ const userSignIntoDB = async (payload: TUserAuth) => {
   )
     throw new AppError(httpStatus.UNAUTHORIZED, 'Invalid credentials');
 
+  if (user.isBlocked)
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      'Your account is blocked, you are not allowed to login',
+    );
+
   const jwtPayload = {
     userEmail: user.email,
     role: user.role,

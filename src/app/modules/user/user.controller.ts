@@ -26,6 +26,20 @@ const updateProfile = catchAsync(async (req, res) => {
   });
 });
 
+const getAllUsers = catchAsync(async (req, res) => {
+  const { paginationMetaData, result } = await UserService.getAllUsers(
+    req.query,
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Cars retrieved successfully',
+    paginationMetaData,
+    data: result,
+  });
+});
+
 // MANAGING USERS
 const manageUserStatus = catchAsync(async (req, res) => {
   const { id } = req.params;
@@ -41,5 +55,6 @@ const manageUserStatus = catchAsync(async (req, res) => {
 export const UserController = {
   updateProfile,
   changePassword,
+  getAllUsers,
   manageUserStatus,
 };

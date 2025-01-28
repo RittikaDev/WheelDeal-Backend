@@ -115,7 +115,7 @@ const verifyPayment = async (order_id: string) => {
         'transaction.date_time': verifiedPayment[0].date_time,
         status:
           verifiedPayment[0].bank_status == 'Success'
-            ? 'Shipped'
+            ? 'Pending'
             : verifiedPayment[0].bank_status == 'Failed'
               ? 'Pending'
               : verifiedPayment[0].bank_status == 'Cancel'
@@ -201,7 +201,13 @@ const updateOrderStatus = async (
   status: OrderStatus,
   deliveryDate: string,
 ) => {
-  const validStatuses = ['Pending', 'Processing', 'Shipped', 'Delivered'];
+  const validStatuses = [
+    'Pending',
+    'Processing',
+    'Shipped',
+    'Delivered',
+    'Cancelled',
+  ];
 
   if (!validStatuses.includes(status))
     throw new AppError(httpStatus.BAD_REQUEST, 'Invalid status');
@@ -219,6 +225,17 @@ const updateOrderStatus = async (
   return order;
 };
 
+const deleteSelectedOrder = async (id: string) => {
+  const isOrderExists = await OrderModel.findById(id);
+
+  if (!isOrderExists)
+    throw new AppError(httpStatus.BAD_REQUEST, 'Order does not exist');
+
+  const deletedOrder = await OrderModel.findByIdAndDelete(id);
+
+  return deletedOrder;
+};
+
 export const OrderService = {
   createOrder,
   verifyPayment,
@@ -226,4 +243,5 @@ export const OrderService = {
   getUserOrders,
   cancelOrder,
   updateOrderStatus,
+  deleteSelectedOrder,
 };

@@ -84,17 +84,28 @@ const deleteACarFromDB = async (id: string) => {
   if (!isProductExists)
     throw new AppError(httpStatus.BAD_REQUEST, 'Car does not exist');
 
-  const deletedCar = await CarModel.findByIdAndUpdate(
-    id,
-    { isDeleted: true, status: 'unavailable', stock: 0 },
-    {
-      new: true,
-      runValidators: true,
-    },
-  );
+  const deletedCar = await CarModel.findByIdAndDelete(id);
 
   return deletedCar;
 };
+
+// const deleteACarFromDB = async (id: string) => {
+//   const isProductExists = await CarModel.findById(id);
+
+//   if (!isProductExists)
+//     throw new AppError(httpStatus.BAD_REQUEST, 'Car does not exist');
+
+//   const deletedCar = await CarModel.findByIdAndUpdate(
+//     id,
+//     { isDeleted: true, status: 'unavailable', stock: 0 },
+//     {
+//       new: true,
+//       runValidators: true,
+//     },
+//   );
+
+//   return deletedCar;
+// };
 
 export const CarService = {
   createCarIntoDB,

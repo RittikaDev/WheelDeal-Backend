@@ -7,3 +7,5 @@ export const searchableFields = [
   'category',
   'color',
 ];
+
+export const searchableUsers = ['name', 'email'];

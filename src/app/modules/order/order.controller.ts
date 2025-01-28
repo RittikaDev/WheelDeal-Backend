@@ -122,6 +122,17 @@ const updateOrderStatus = catchAsync(async (req, res) => {
   });
 });
 
+const deleteSelectedOrder = catchAsync(async (req: Request, res: Response) => {
+  const { orderId } = req.params;
+  const result = await OrderService.deleteSelectedOrder(orderId);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Car deleted successfully',
+    data: result,
+  });
+});
+
 export const OrderController = {
   createOrder,
   verifyPayment,
@@ -129,4 +140,5 @@ export const OrderController = {
   getUserOrders,
   cancelOrder,
   updateOrderStatus,
+  deleteSelectedOrder,
 };

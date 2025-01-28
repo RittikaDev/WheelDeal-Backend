@@ -5,7 +5,9 @@ import { User } from './user.model';
 import bcrypt from 'bcrypt';
 import AppError from '../../errors/AppError';
 import httpStatus from 'http-status-codes';
-import { TUser } from './user.interface';
+import { TUser, UserModel } from './user.interface';
+import QueryBuilder from '../../builder/QueryBuilder';
+import { searchableUsers } from '../car/car.constants';
 
 const changePassword = async (
   userData: JwtPayload,
@@ -70,6 +72,20 @@ const updateProfile = async (userData: JwtPayload, payload: TUser) => {
   return updatedUser;
 };
 
+const getAllUsers = async (query: Record<string, unknown>) => {
+  const carQuery = new QueryBuilder(User.find({}), query)
+    .filter()
+    .sort()
+    .paginate()
+    .fields()
+    .search(searchableUsers);
+
+  const result = await carQuery.modelQuery;
+  const paginationMetaData = await carQuery.countTotal();
+
+  return { result, paginationMetaData };
+};
+
 // MANAGING USERS
 const manageUserStatus = async (
   id: string,
@@ -88,5 +104,6 @@ const manageUserStatus = async (
 export const UserService = {
   changePassword,
   updateProfile,
+  getAllUsers,
   manageUserStatus,
 };

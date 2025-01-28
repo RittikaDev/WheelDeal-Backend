@@ -15,6 +15,16 @@ router.get('/verify', auth(USER_ROLE.user), OrderController.verifyPayment);
 router.get('/my-bookings', auth(USER_ROLE.user), OrderController.getUserOrders);
 
 router.get('/cancel-order', auth(USER_ROLE.user), OrderController.cancelOrder);
-router.patch('/orders/:orderId/status', OrderController.updateOrderStatus);
+
+router.delete(
+  '/:orderId/delete-order',
+  auth(USER_ROLE.admin),
+  OrderController.deleteSelectedOrder,
+);
+router.patch(
+  '/:orderId/status',
+  auth(USER_ROLE.admin),
+  OrderController.updateOrderStatus,
+);
 
 export const OrderRoute = router;
