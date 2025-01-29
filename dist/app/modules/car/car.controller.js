@@ -8,240 +8,106 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CarController = void 0;
+const http_status_codes_1 = __importDefault(require("http-status-codes"));
 const car_service_1 = require("./car.service");
-const car_validation_1 = require("./car.validation");
-const zod_1 = require("zod");
-const createACar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        // VALIDATION USING ZOD
-        const zodParsedCarData = car_validation_1.carValidationSchema.parse(req.body);
-        const result = yield car_service_1.CarService.createCarIntoDB(zodParsedCarData);
-        res.status(200).json({
-            message: 'Car created successfully',
+const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
+const catchAsync_1 = __importDefault(require("../../utils/catchAsync"));
+const createACar = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield car_service_1.CarService.createCarIntoDB(req.body);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.default.OK,
+        success: true,
+        message: 'Car created successfully',
+        data: result,
+    });
+}));
+const getFeaturedCars = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield car_service_1.CarService.getFeaturedCarsFromDB();
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: http_status_codes_1.default.OK,
+        message: 'Featured cars retrieved successfully',
+        data: result,
+    });
+}));
+const getCarBrandCatModel = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield car_service_1.CarService.getCarBrandCatModel();
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: http_status_codes_1.default.OK,
+        message: 'Brand names retrieved successfully',
+        data: result,
+    });
+}));
+const getAllCars = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { paginationMetaData, result } = yield car_service_1.CarService.getAllCarsFromDB(req.query);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: http_status_codes_1.default.OK,
+        message: 'Cars retrieved successfully',
+        paginationMetaData,
+        data: result,
+    });
+}));
+const getSingleCar = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { carId } = req.params;
+    const result = yield car_service_1.CarService.getSingleCarFromDB(carId);
+    if (result != null) {
+        (0, sendResponse_1.default)(res, {
+            statusCode: http_status_codes_1.default.OK,
             success: true,
+            message: 'Car retrieved successfully',
             data: result,
         });
     }
-    catch (err) {
-        if (err instanceof zod_1.z.ZodError) {
-            // Create detailed error message for Zod validation errors
-            const errorDetails = err.errors.reduce((acc, error) => {
-                acc[error.path.join('.')] = {
-                    message: error.message,
-                    name: 'ValidatorError',
-                    properties: {
-                        message: error.message,
-                        path: error.path.join('.'),
-                    },
-                };
-                return acc;
-            }, {});
-            res.status(400).json({
-                message: 'Validation failed',
-                success: false,
-                error: {
-                    name: 'ValidationError',
-                    errors: errorDetails,
-                },
-                stack: err.stack || null,
-            });
-        }
-        else {
-            res.status(500).json({
-                message: 'Car could not be created!',
-                success: false,
-                error: {
-                    name: err instanceof Error ? err.name : 'UnknownError',
-                    message: err instanceof Error ? err.message : 'An unknown error occurred',
-                },
-                stack: err instanceof Error ? err.stack : null,
-            });
-        }
-    }
-});
-const getAllCars = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { searchTerm } = req.query;
-        const result = yield car_service_1.CarService.getAllCarsFromDB(searchTerm);
-        if (result.length > 0) {
-            res.status(200).json({
-                message: 'Cars retrieved successfully',
-                status: true,
-                data: result,
-            });
-        }
-        else
-            res.status(404).json({
-                success: false,
-                message: 'No cars found.',
-                data: null,
-            });
-    }
-    catch (err) {
-        if (err instanceof Error) {
-            res.status(500).json({
-                message: 'An error occurred while fetching cars',
-                success: false,
-                error: {
-                    name: err.name,
-                    message: err.message,
-                    stack: err.stack,
-                },
-            });
-        }
-        else {
-            res.status(500).json({
-                message: 'An unexpected error occurred',
-                success: false,
-                error: {
-                    name: 'UnknownError',
-                    message: 'An unknown error occurred',
-                    stack: 'No stack trace available',
-                },
-            });
-        }
-    }
-});
-const getSingleCar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { carId } = req.params;
-        const result = yield car_service_1.CarService.getSingleCarFromDB(carId);
-        if (result != null) {
-            res.status(200).json({
-                message: 'Car retrieved successfully',
-                status: true,
-                data: result,
-            });
-        }
-        else
-            res.status(404).json({
-                success: false,
-                message: 'No cars found.',
-                data: null,
-            });
-    }
-    catch (err) {
-        if (err instanceof Error) {
-            res.status(404).json({
-                success: false,
-                message: 'Car not found',
-            });
-        }
-        else {
-            res.status(500).json({
-                message: 'An unexpected error occurred',
-                success: false,
-                error: {
-                    name: 'UnknownError',
-                    message: 'An unknown error occurred',
-                    stack: 'No stack trace available',
-                },
-            });
-        }
-    }
-});
-const updateACar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { carId } = req.params;
-        const updateData = req.body;
-        // AT LEAST HAS TO BE PROVIDED
-        if (Object.keys(updateData).length === 0) {
-            res.status(400).json({
-                success: false,
-                message: 'At least one field must be provided for update',
-            });
-            return;
-        }
-        else if (!updateData.price || !updateData.quantity) {
-            res.status(400).json({
-                success: false,
-                message: 'Price and quantity must be provided',
-            });
-            return;
-        }
-        const result = yield car_service_1.CarService.updateACarIntoDB(carId, updateData);
-        if (!result) {
-            res.status(404).json({
-                success: false,
-                message: 'Car not found',
-            });
-        }
-        else
-            res.status(200).json({
-                message: 'Car updated successfully',
-                status: true,
-                data: result,
-            });
-    }
-    catch (err) {
-        if (err instanceof zod_1.z.ZodError) {
-            const errorMsg = err.errors.map((error) => ({
-                path: error.path.join('.'),
-                errorMessage: error.message,
-            }));
-            res.status(400).json({
-                success: false,
-                message: 'Validation error',
-                errors: errorMsg,
-            });
-        }
-        else if (err instanceof Error) {
-            res.status(404).json({
-                success: false,
-                message: 'Car not found',
-            });
-        }
-        else {
-            res.status(500).json({
-                success: false,
-                message: 'An error occurred while updating the car',
-                error: err.message || 'Unknown error',
-            });
-        }
-    }
-});
-const deleteACar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { carId } = req.params;
-        yield car_service_1.CarService.deleteACarFromDB(carId);
-        res.status(200).json({
-            message: 'Car deleted successfully',
-            status: true,
-            data: {},
+    else
+        (0, sendResponse_1.default)(res, {
+            statusCode: http_status_codes_1.default.NOT_FOUND,
+            success: false,
+            message: 'No Data Found',
+            data: [],
         });
+}));
+const updateACar = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { carId } = req.params;
+    const updateData = req.body;
+    // AT LEAST HAS TO BE PROVIDED
+    if (Object.keys(updateData).length === 0) {
+        (0, sendResponse_1.default)(res, {
+            statusCode: http_status_codes_1.default.BAD_REQUEST,
+            success: false,
+            message: 'At least one field must be provided for update',
+            data: [],
+        });
+        return;
     }
-    catch (err) {
-        // console.error('Error occurred:', err);
-        if (err instanceof zod_1.z.ZodError) {
-            const errorMsg = err.errors.map((error) => ({
-                path: error.path.join('.'),
-                errorMessage: error.message,
-            }));
-            res.status(400).json({
-                success: false,
-                message: 'Validation error',
-                errors: errorMsg,
-            });
-        }
-        else if (err instanceof Error) {
-            res.status(404).json({
-                success: false,
-                message: 'Car not found',
-            });
-        }
-        else {
-            res.status(500).json({
-                success: false,
-                message: 'An error occurred while deleting the car',
-                error: err.message || 'Unknown error',
-            });
-        }
-    }
-});
+    const result = yield car_service_1.CarService.updateACarIntoDB(carId, updateData);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.default.OK,
+        success: true,
+        message: 'Car updated successfully',
+        data: result,
+    });
+}));
+const deleteACar = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { carId } = req.params;
+    const result = yield car_service_1.CarService.deleteACarFromDB(carId);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.default.OK,
+        success: true,
+        message: 'Car deleted successfully',
+        data: result,
+    });
+}));
 exports.CarController = {
     createACar,
+    getFeaturedCars,
+    getCarBrandCatModel,
     getAllCars,
     getSingleCar,
     updateACar,
