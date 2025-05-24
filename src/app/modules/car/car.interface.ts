@@ -24,4 +24,5 @@ export interface ICar {
   isDeleted: boolean;
   createdAt?: Date;
   updatedAt?: Date;
+  discountPrice?: number;
 }

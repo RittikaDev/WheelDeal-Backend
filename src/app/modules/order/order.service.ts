@@ -11,11 +11,95 @@ import QueryBuilder from '../../builder/QueryBuilder';
 import httpStatus from 'http-status-codes';
 import { JwtPayload } from 'jsonwebtoken';
 
+// const createOrder = async (
+//   user: JwtPayload,
+//   // payload: { products: { product: string; quantity: number }[] },
+//   payload: {
+//     products: { product: string; quantity: number }[];
+//     address?: {
+//       address: string;
+//       city: string;
+//       phone: string;
+//     };
+//   },
+//   client_ip: string,
+// ) => {
+//   if (!payload?.products?.length)
+//     throw new AppError(httpStatus.NOT_ACCEPTABLE, 'Order is not specified');
+
+//   const products = payload.products;
+
+//   let totalPrice = 0;
+//   const productDetails = await Promise.all(
+//     products.map(async (item) => {
+//       const product = await CarModel.findById(item.product);
+//       if (product) {
+//         if (product.stock < item.quantity) {
+//           throw new AppError(
+//             httpStatus.BAD_REQUEST,
+//             'Product is stock out, can not place an order',
+//           );
+//         }
+//         const subtotal = product ? (product.price || 0) * item.quantity : 0;
+//         totalPrice += subtotal;
+
+//         product.stock -= item.quantity;
+//         if (product.stock <= 0) product.status = 'unavailable';
+//         await product.save();
+
+//         return item;
+//       }
+//     }),
+//   );
+
+//   const userDetails = await User.findOne({ email: user.userEmail });
+
+//   const address = {
+//     address: userDetails?.address || payload?.address?.address || '',
+//     city: userDetails?.city || payload?.address?.city || '',
+//     phone: userDetails?.phone || payload?.address?.phone || '',
+//   };
+
+//   let order = await OrderModel.create({
+//     user: userDetails?._id,
+//     products: productDetails,
+//     totalPrice,
+//   });
+
+//   // payment integration
+//   const shurjopayPayload = {
+//     amount: totalPrice,
+//     order_id: order._id,
+//     currency: 'BDT',
+//     customer_name: userDetails?.name,
+//     customer_address: address?.address,
+//     customer_email: userDetails?.email,
+//     customer_phone: address?.phone,
+//     customer_city: address?.city,
+//     client_ip,
+//   };
+//   // console.log('inside order service', shurjopayPayload);
+
+//   const payment = await orderUtils.makePaymentAsync(shurjopayPayload);
+
+//   // console.log(payment);
+
+//   if (payment?.transactionStatus) {
+//     order = await order.updateOne({
+//       transaction: {
+//         id: payment.sp_order_id,
+//         transactionStatus: payment.transactionStatus,
+//       },
+//     });
+//   }
+
+//   return payment.checkout_url;
+// };
+
 const createOrder = async (
   user: JwtPayload,
-  // payload: { products: { product: string; quantity: number }[] },
   payload: {
-    products: { product: string; quantity: number }[];
+    products: { product: string; quantity: number; pricePerUnit: number }[];
     address?: {
       address: string;
       city: string;
@@ -40,14 +124,25 @@ const createOrder = async (
             'Product is stock out, can not place an order',
           );
         }
-        const subtotal = product ? (product.price || 0) * item.quantity : 0;
+        console.log(product, item);
+        // Use discountPrice if available, else fallback to regular price
+        const effectivePrice = item.pricePerUnit ?? product.price ?? 0;
+
+        const subtotal = effectivePrice * item.quantity;
         totalPrice += subtotal;
 
         product.stock -= item.quantity;
         if (product.stock <= 0) product.status = 'unavailable';
         await product.save();
 
-        return item;
+        // Return item along with price info for order record if needed
+        return {
+          product: item.product,
+          quantity: item.quantity,
+          price: product.price,
+          discountPrice: product.discountPrice,
+          subtotal,
+        };
       }
     }),
   );
@@ -78,14 +173,11 @@ const createOrder = async (
     customer_city: address?.city,
     client_ip,
   };
-  // console.log('inside order service', shurjopayPayload);
 
   const payment = await orderUtils.makePaymentAsync(shurjopayPayload);
 
-  // console.log(payment);
-
   if (payment?.transactionStatus) {
-    order = await order.updateOne({
+    await order.updateOne({
       transaction: {
         id: payment.sp_order_id,
         transactionStatus: payment.transactionStatus,
