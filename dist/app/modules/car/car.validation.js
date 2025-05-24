@@ -17,6 +17,7 @@ const createCarValidationSchema = zod_1.z.object({
             .min(1900, 'Year must be a valid year')
             .max(new Date().getFullYear(), 'Year cannot be in the future'),
         color: zod_1.z.string().min(1, 'Color is required'),
+        rating: zod_1.z.number().int().min(1, 'Rating is required').optional(),
         seatCapacity: zod_1.z.number().int().min(1, 'Seat capacity is required'),
         isElectric: zod_1.z.boolean().default(false),
         moreImages: zod_1.z
@@ -59,6 +60,7 @@ const updateCarValidationSchema = zod_1.z.object({
             .int()
             .min(1, 'Seat capacity is required')
             .optional(),
+        rating: zod_1.z.number().int().min(1, 'Rating is required').optional(),
         isElectric: zod_1.z.boolean().default(false).optional(),
         moreImages: zod_1.z
             .array(zod_1.z.object({

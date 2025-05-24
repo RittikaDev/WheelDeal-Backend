@@ -11,6 +11,7 @@ const carSchema = new mongoose_1.Schema({
     type: { type: String, required: [true, 'Type is required'] },
     category: { type: String, required: [true, 'Category is required'] },
     year: { type: Number, required: [true, 'Year is required'] },
+    rating: { type: Number, required: [true, 'Year is required'] },
     price: { type: Number, required: [true, 'Year is required'] },
     color: { type: String, required: [true, 'Color is required'] },
     seatCapacity: {

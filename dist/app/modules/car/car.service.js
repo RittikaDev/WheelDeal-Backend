@@ -18,6 +18,7 @@ const car_model_1 = require("./car.model");
 const car_constants_1 = require("./car.constants");
 const http_status_codes_1 = __importDefault(require("http-status-codes"));
 const AppError_1 = __importDefault(require("../../errors/AppError"));
+const mongoose_1 = __importDefault(require("mongoose"));
 const createCarIntoDB = (car) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield car_model_1.CarModel.create(car);
     return result;
@@ -50,10 +51,20 @@ const getCarBrandCatModel = () => __awaiter(void 0, void 0, void 0, function* ()
     ]);
     return result.map((item) => item._id);
 });
+const getSuggestedCars = (currentCarId_1, ...args_1) => __awaiter(void 0, [currentCarId_1, ...args_1], void 0, function* (currentCarId, count = 3) {
+    const suggestedCars = yield car_model_1.CarModel.aggregate([
+        { $match: { _id: { $ne: new mongoose_1.default.Types.ObjectId(currentCarId) } } },
+        { $sample: { size: count } },
+    ]);
+    return suggestedCars;
+});
 const getSingleCarFromDB = (id) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield car_model_1.CarModel.findOne({ _id: id }); // SEARCHING BY THE MONGODB _ID
-    // console.log(result);
-    return result;
+    const result = yield car_model_1.CarModel.findOne({ _id: id });
+    const suggestedCars = yield getSuggestedCars(id, 3);
+    return {
+        result,
+        suggestedCars,
+    };
 });
 const updateACarIntoDB = (carId, updateCarData) => __awaiter(void 0, void 0, void 0, function* () {
     // FETCH THE CAR FROM THE DATABASE TO CHECK ITS CURRENT STATUS
