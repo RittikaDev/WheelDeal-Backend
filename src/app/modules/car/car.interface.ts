@@ -11,6 +11,7 @@ export interface ICar {
   type: string;
   category: string;
   year: number;
+  rating: number;
   price: number;
   color: string;
   seatCapacity: number;

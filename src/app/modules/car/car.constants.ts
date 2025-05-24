@@ -6,6 +6,7 @@ export const searchableFields = [
   'type',
   'category',
   'color',
+  'rating',
 ];
 
 export const searchableUsers = ['name', 'email'];

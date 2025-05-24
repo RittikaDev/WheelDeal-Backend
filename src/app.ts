@@ -17,7 +17,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: 'https://wheel-deal-frontend.vercel.app',
+    origin: ['https://wheel-deal-frontend.vercel.app', 'http://localhost:5173'],
     credentials: true,
   }),
 );

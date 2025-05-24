@@ -6,6 +6,7 @@ import { searchableFields } from './car.constants';
 
 import httpStatus from 'http-status-codes';
 import AppError from '../../errors/AppError';
+import mongoose from 'mongoose';
 
 const createCarIntoDB = async (car: ICar) => {
   const result = await CarModel.create(car);
@@ -47,10 +48,23 @@ const getCarBrandCatModel = async () => {
   return result.map((item) => item._id);
 };
 
+const getSuggestedCars = async (currentCarId: string, count = 3) => {
+  const suggestedCars = await CarModel.aggregate([
+    { $match: { _id: { $ne: new mongoose.Types.ObjectId(currentCarId) } } },
+    { $sample: { size: count } },
+  ]);
+
+  return suggestedCars;
+};
+
 const getSingleCarFromDB = async (id: string) => {
-  const result = await CarModel.findOne({ _id: id }); // SEARCHING BY THE MONGODB _ID
-  // console.log(result);
-  return result;
+  const result = await CarModel.findOne({ _id: id });
+  const suggestedCars = await getSuggestedCars(id, 3);
+
+  return {
+    result,
+    suggestedCars,
+  };
 };
 
 const updateACarIntoDB = async (
