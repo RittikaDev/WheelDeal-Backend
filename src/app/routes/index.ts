@@ -4,6 +4,7 @@ import { OrderRoute } from '../modules/order/order.route';
 import { AuthRoutes } from '../modules/auth/auth.route';
 import { UserRoute } from '../modules/user/user.route';
 import { CouponRoute } from '../modules/coupon/coupon.route';
+import { NewsletterRoute } from '../modules/newsletter/newsletter.route';
 
 const router = Router();
 
@@ -27,6 +28,10 @@ const moduleRoutes = [
   {
     path: '/orders',
     route: OrderRoute,
+  },
+  {
+    path: '/newsletter',
+    route: NewsletterRoute,
   },
 ];
 

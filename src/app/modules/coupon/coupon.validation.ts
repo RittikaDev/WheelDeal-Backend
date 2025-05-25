@@ -5,7 +5,7 @@ const CreateCouponSchema = z.object({
     code: z.string().min(3).max(50).toUpperCase(),
     discountAmount: z.number().positive(),
     discountType: z.enum(['flat', 'percentage']),
-    expiryDate: z.string().datetime({ offset: true }),
+    expiryDate: z.string().datetime(),
   }),
 });
 

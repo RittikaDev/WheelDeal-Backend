@@ -52,6 +52,7 @@ const getCoupons = catchAsync(async (req, res) => {
 
 const updateCoupon = catchAsync(async (req, res) => {
   const couponId = req.params.id;
+  console.log('Updating coupon with ID:', couponId);
 
   const updatedCoupon = await CouponService.updateCoupon(couponId, req.body);
 

@@ -20,27 +20,108 @@ const user_model_1 = require("../user/user.model");
 const AppError_1 = __importDefault(require("../../errors/AppError"));
 const QueryBuilder_1 = __importDefault(require("../../builder/QueryBuilder"));
 const http_status_codes_1 = __importDefault(require("http-status-codes"));
-const createOrder = (user, 
-// payload: { products: { product: string; quantity: number }[] },
-payload, client_ip) => __awaiter(void 0, void 0, void 0, function* () {
+// const createOrder = async (
+//   user: JwtPayload,
+//   // payload: { products: { product: string; quantity: number }[] },
+//   payload: {
+//     products: { product: string; quantity: number }[];
+//     address?: {
+//       address: string;
+//       city: string;
+//       phone: string;
+//     };
+//   },
+//   client_ip: string,
+// ) => {
+//   if (!payload?.products?.length)
+//     throw new AppError(httpStatus.NOT_ACCEPTABLE, 'Order is not specified');
+//   const products = payload.products;
+//   let totalPrice = 0;
+//   const productDetails = await Promise.all(
+//     products.map(async (item) => {
+//       const product = await CarModel.findById(item.product);
+//       if (product) {
+//         if (product.stock < item.quantity) {
+//           throw new AppError(
+//             httpStatus.BAD_REQUEST,
+//             'Product is stock out, can not place an order',
+//           );
+//         }
+//         const subtotal = product ? (product.price || 0) * item.quantity : 0;
+//         totalPrice += subtotal;
+//         product.stock -= item.quantity;
+//         if (product.stock <= 0) product.status = 'unavailable';
+//         await product.save();
+//         return item;
+//       }
+//     }),
+//   );
+//   const userDetails = await User.findOne({ email: user.userEmail });
+//   const address = {
+//     address: userDetails?.address || payload?.address?.address || '',
+//     city: userDetails?.city || payload?.address?.city || '',
+//     phone: userDetails?.phone || payload?.address?.phone || '',
+//   };
+//   let order = await OrderModel.create({
+//     user: userDetails?._id,
+//     products: productDetails,
+//     totalPrice,
+//   });
+//   // payment integration
+//   const shurjopayPayload = {
+//     amount: totalPrice,
+//     order_id: order._id,
+//     currency: 'BDT',
+//     customer_name: userDetails?.name,
+//     customer_address: address?.address,
+//     customer_email: userDetails?.email,
+//     customer_phone: address?.phone,
+//     customer_city: address?.city,
+//     client_ip,
+//   };
+//   // console.log('inside order service', shurjopayPayload);
+//   const payment = await orderUtils.makePaymentAsync(shurjopayPayload);
+//   // console.log(payment);
+//   if (payment?.transactionStatus) {
+//     order = await order.updateOne({
+//       transaction: {
+//         id: payment.sp_order_id,
+//         transactionStatus: payment.transactionStatus,
+//       },
+//     });
+//   }
+//   return payment.checkout_url;
+// };
+const createOrder = (user, payload, client_ip) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d;
     if (!((_a = payload === null || payload === void 0 ? void 0 : payload.products) === null || _a === void 0 ? void 0 : _a.length))
         throw new AppError_1.default(http_status_codes_1.default.NOT_ACCEPTABLE, 'Order is not specified');
     const products = payload.products;
     let totalPrice = 0;
     const productDetails = yield Promise.all(products.map((item) => __awaiter(void 0, void 0, void 0, function* () {
+        var _a, _b;
         const product = yield car_model_1.CarModel.findById(item.product);
         if (product) {
             if (product.stock < item.quantity) {
                 throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, 'Product is stock out, can not place an order');
             }
-            const subtotal = product ? (product.price || 0) * item.quantity : 0;
+            console.log(product, item);
+            // Use discountPrice if available, else fallback to regular price
+            const effectivePrice = (_b = (_a = item.pricePerUnit) !== null && _a !== void 0 ? _a : product.price) !== null && _b !== void 0 ? _b : 0;
+            const subtotal = effectivePrice * item.quantity;
             totalPrice += subtotal;
             product.stock -= item.quantity;
             if (product.stock <= 0)
                 product.status = 'unavailable';
             yield product.save();
-            return item;
+            // Return item along with price info for order record if needed
+            return {
+                product: item.product,
+                quantity: item.quantity,
+                price: product.price,
+                discountPrice: product.discountPrice,
+                subtotal,
+            };
         }
     })));
     const userDetails = yield user_model_1.User.findOne({ email: user.userEmail });
@@ -66,11 +147,9 @@ payload, client_ip) => __awaiter(void 0, void 0, void 0, function* () {
         customer_city: address === null || address === void 0 ? void 0 : address.city,
         client_ip,
     };
-    // console.log('inside order service', shurjopayPayload);
     const payment = yield order_utils_1.orderUtils.makePaymentAsync(shurjopayPayload);
-    // console.log(payment);
     if (payment === null || payment === void 0 ? void 0 : payment.transactionStatus) {
-        order = yield order.updateOne({
+        yield order.updateOne({
             transaction: {
                 id: payment.sp_order_id,
                 transactionStatus: payment.transactionStatus,
