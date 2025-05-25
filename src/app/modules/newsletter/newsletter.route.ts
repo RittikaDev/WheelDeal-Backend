@@ -7,7 +7,7 @@ const router = express.Router();
 
 // Admin routes (CRUD)
 router.post('/', auth(USER_ROLE.admin), NewsletterController.createNewsletter);
-router.get('/', auth(USER_ROLE.admin), NewsletterController.getNewsletters);
+router.get('/', NewsletterController.getNewsletters);
 router.patch(
   '/:id',
   auth(USER_ROLE.admin),
